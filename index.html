@@ -7,30 +7,47 @@
 <body>
     <h2>MPG Predictor</h2>
 
-    <label>Cylinders:</label>
-    <input id="cyl" type="number"><br><br>
+    <!-- Cylinders -->
+    <label for="cyl">Cylinders:</label>
+    <input id="cyl" type="number" min="3" max="8"><br>
+    <small>Typical values: 4, 6, or 8 cylinders</small>
+    <br><br>
 
-    <label>Displacement:</label>
-    <input id="disp" type="number"><br><br>
+    <!-- Displacement -->
+    <label for="disp">Displacement:</label>
+    <input id="disp" type="number" min="60" max="460"><br>
+    <small>Enter engine displacement (about 68 to 455 cubic inches)</small>
+    <br><br>
 
-    <label>Horsepower:</label>
-    <input id="hp" type="number"><br><br>
+    <!-- Horsepower -->
+    <label for="hp">Horsepower:</label>
+    <input id="hp" type="number" min="40" max="240"><br>
+    <small>Enter horsepower (typically 46 to 230)</small>
+    <br><br>
 
-    <label>Weight:</label>
-    <input id="weight" type="number"><br><br>
+    <!-- Weight -->
+    <label for="weight">Weight:</label>
+    <input id="weight" type="number" min="1500" max="5500"><br>
+    <small>Enter vehicle weight (roughly 1600 to 5200 lbs)</small>
+    <br><br>
 
-    <label>Acceleration:</label>
-    <input id="acc" type="number"><br><br>
+    <!-- Acceleration -->
+    <label for="acc">Acceleration:</label>
+    <input id="acc" type="number" step="0.1" min="8" max="26"><br>
+    <small>Enter acceleration time (about 8.0 to 24.8 seconds)</small>
+    <br><br>
 
-    <label>Model Year:</label>
-    <input id="year" type="number"><br><br>
+    <!-- Model Year -->
+    <label for="year">Model Year:</label>
+    <input id="year" type="number" min="70" max="82"><br>
+    <small>Enter model year (between 70 and 82)</small>
+    <br><br>
 
-<label for="origin">Origin:</label>
-<input type="number" id="origin" min="1" max="3"><br>
-<small>
-    Enter 1 for USA, 2 for Europe, 3 for Asia
-</small>
-<br><br>
+    <!-- Origin -->
+    <label for="origin">Origin:</label>
+    <input id="origin" type="number" min="1" max="3"><br>
+    <small>Enter 1 for USA, 2 for Europe, 3 for Asia</small>
+    <br><br>
 
     <button onclick="predict()">Predict MPG</button>
 
