@@ -5,9 +5,14 @@
     <title>MPG Predictor</title>
 
     <!-- Load ONNX Runtime Web -->
-    <script src="https://unpkg.com/onnxruntime-web/dist/ort.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 
-    <!-- Load your script ONCE -->
+    <!-- Tell ORT where to find *.data split files -->
+    <script>
+        ort.env.wasm.wasmPaths = "https://matthewlebl-max.github.io/TS520/";
+    </script>
+
+    <!-- Load prediction script -->
     <script src="script.js" defer></script>
 </head>
 
