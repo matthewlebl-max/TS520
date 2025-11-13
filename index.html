@@ -1,23 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>MPG Predictor</title>
 </head>
 <body>
-<h2>MPG Predictor</h2>
+    <h2>MPG Predictor</h2>
 
-<input id="cyl" placeholder="Cylinders"><br>
-<input id="disp" placeholder="Displacement"><br>
-<input id="hp" placeholder="Horsepower"><br>
-<input id="weight" placeholder="Weight"><br>
-<input id="acc" placeholder="Acceleration"><br>
-<input id="year" placeholder="Model Year"><br>
-<input id="origin" placeholder="Origin"><br>
+    <label>Cylinders:</label>
+    <input id="cyl" type="number"><br><br>
 
-<button onclick="predict()">Predict MPG</button>
+    <label>Displacement:</label>
+    <input id="disp" type="number"><br><br>
 
-<p id="result"></p>
+    <label>Horsepower:</label>
+    <input id="hp" type="number"><br><br>
 
-<script src="script.js"></script>
+    <label>Weight:</label>
+    <input id="weight" type="number"><br><br>
+
+    <label>Acceleration:</label>
+    <input id="acc" type="number"><br><br>
+
+    <label>Model Year:</label>
+    <input id="year" type="number"><br><br>
+
+    <label>Origin:</label>
+    <input id="origin" type="number"><br><br>
+
+    <button onclick="predict()">Predict MPG</button>
+
+    <h3 id="result"></h3>
+
+    <script src="script.js"></script>
 </body>
 </html>
