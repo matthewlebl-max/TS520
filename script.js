@@ -6,18 +6,22 @@ async function predict() {
         parseFloat(document.getElementById("weight").value),
         parseFloat(document.getElementById("acc").value),
         parseFloat(document.getElementById("year").value),
-        parseFloat(document.getElementById("origin").value)
+        parseFloat(document.getElementById("orig").value)
     ];
 
-    // Change this if you deploy Flask to Render
-    const apiUrl = "http://localhost:5000/predict";
+    const apiUrl = "http://localhost:5000/predict";  // adjust if you deploy elsewhere
 
-    const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({inputs: inputs})
-    });
+    try {
+        const res = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inputs: inputs })
+        });
 
-    const data = await res.json();
-    document.getElementById("result").innerText = "Predicted MPG: " + data.mpg;
+        const data = await res.json();
+        document.getElementById("result").innerText = "Predicted MPG: " + data.mpg;
+    } catch (err) {
+        document.getElementById("result").innerText = "Error contacting API.";
+        console.error(err);
+    }
 }
