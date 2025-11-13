@@ -1,40 +1,74 @@
-let session = null;
+let model = null;
 
-async function initModel() {
-    if (!session) {
-        session = await ort.InferenceSession.create(
-            "mpg_pytorch.onnx",
-            {
-                executionProviders: ["wasm"],
-                graphOptimizationLevel: "disabled"
+// Load JSON model once
+async function loadModel() {
+    if (model) return;
+
+    const response = await fetch("model.json");
+    model = await response.json();
+}
+
+// Matrix multiply helper
+function matmul(a, b) {
+    const result = new Array(a.length)
+        .fill(0)
+        .map(() => new Array(b[0].length).fill(0));
+
+    for (let i = 0; i < a.length; i++) {
+        for (let j = 0; j < b[0].length; j++) {
+            for (let k = 0; k < b.length; k++) {
+                result[i][j] += a[i][k] * b[k][j];
             }
-        );
+        }
     }
+    return result;
+}
+
+// Add bias
+function addBias(mat, bias) {
+    return mat.map((row, i) =>
+        row.map((v, j) => v + bias[j])
+    );
+}
+
+// ReLU
+function relu(mat) {
+    return mat.map(row => row.map(v => Math.max(0, v)));
 }
 
 async function predict() {
-    await initModel();
+    await loadModel();
 
-    const cyl = parseFloat(document.getElementById("cyl").value);
-    const disp = parseFloat(document.getElementById("disp").value);
-    const hp = parseFloat(document.getElementById("hp").value);
-    const weight = parseFloat(document.getElementById("weight").value);
-    const acc = parseFloat(document.getElementById("acc").value);
-    const year = parseFloat(document.getElementById("year").value);
-    const origin = parseFloat(document.getElementById("origin").value);
+    const inputs = [
+        parseFloat(document.getElementById("cyl").value),
+        parseFloat(document.getElementById("disp").value),
+        parseFloat(document.getElementById("hp").value),
+        parseFloat(document.getElementById("weight").value),
+        parseFloat(document.getElementById("acc").value),
+        parseFloat(document.getElementById("year").value),
+        parseFloat(document.getElementById("origin").value)
+    ];
 
-    const inputData = Float32Array.from([
-        cyl, disp, hp, weight, acc, year, origin
-    ]);
+    // Normalize
+    const x = inputs.map((v, i) => (v - model.means[i]) / model.stds[i]);
+    let layer = [x];  // shape [1,7]
 
-    const tensor = new ort.Tensor("float32", inputData, [1, 7]);
+    // fc1
+    layer = matmul(layer, model.fc1_weight);
+    layer = addBias(layer, model.fc1_bias);
+    layer = relu(layer);
 
-    const feeds = {};
-    feeds[session.inputNames[0]] = tensor;
+    // fc2
+    layer = matmul(layer, model.fc2_weight);
+    layer = addBias(layer, model.fc2_bias);
+    layer = relu(layer);
 
-    const results = await session.run(feeds);
-    const mpg = results[session.outputNames[0]].data[0];
+    // fc3
+    layer = matmul(layer, model.fc3_weight);
+    layer = addBias(layer, model.fc3_bias);
+
+    const mpg = layer[0][0];
 
     document.getElementById("result").innerHTML =
-        "Predicted MPG: <strong>" + mpg.toFixed(2) + "</strong>";
+        "Predicted MPG: " + mpg.toFixed(2);
 }
