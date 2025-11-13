@@ -2,59 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MPG Predictor</title>
-
-    <!-- Load model + neural network logic -->
+    <title>MPG Regression and Cylinder Classification</title>
     <script src="script.js" defer></script>
+
+    <style>
+        .container {
+            display: flex;
+            gap: 40px;
+        }
+        .box {
+            width: 45%;
+            border: 1px solid #aaa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        label {
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>MPG Predictor</h2>
 
-    <!-- Cylinders -->
-    <label for="cyl">Cylinders:</label>
-    <input id="cyl" type="number" min="3" max="8"><br>
-    <small>Typical values: 4, 6, or 8 cylinders</small>
-    <br><br>
+    <h1>Vehicle Prediction Models</h1>
 
-    <!-- Displacement -->
-    <label for="disp">Displacement:</label>
-    <input id="disp" type="number" min="60" max="460"><br>
-    <small>Enter engine displacement (about 68 to 455 cubic inches)</small>
-    <br><br>
+    <div class="container">
 
-    <!-- Horsepower -->
-    <label for="hp">Horsepower:</label>
-    <input id="hp" type="number" min="40" max="240"><br>
-    <small>Enter horsepower (typically 46 to 230)</small>
-    <br><br>
+        <!-- LEFT: MPG REGRESSION -->
+        <div class="box">
+            <h2>MPG Regression</h2>
 
-    <!-- Weight -->
-    <label for="weight">Weight:</label>
-    <input id="weight" type="number" min="1500" max="5500"><br>
-    <small>Enter vehicle weight (roughly 1600 to 5200 lbs)</small>
-    <br><br>
+            <label>Cylinders:</label><br>
+            <input id="r_cyl" type="number" min="3" max="8"><br><br>
 
-    <!-- Acceleration -->
-    <label for="acc">Acceleration:</label>
-    <input id="acc" type="number" step="0.1" min="8" max="26"><br>
-    <small>Enter acceleration time (about 8.0 to 24.8 seconds)</small>
-    <br><br>
+            <label>Displacement:</label><br>
+            <input id="r_disp" type="number" min="60" max="460"><br><br>
 
-    <!-- Model Year -->
-    <label for="year">Model Year:</label>
-    <input id="year" type="number" min="70" max="82"><br>
-    <small>Enter model year (between 70 and 82)</small>
-    <br><br>
+            <label>Horsepower:</label><br>
+            <input id="r_hp" type="number" min="40" max="240"><br><br>
 
-    <!-- Origin -->
-    <label for="origin">Origin:</label>
-    <input id="origin" type="number" min="1" max="3"><br>
-    <small>Enter 1 for USA, 2 for Europe, 3 for Asia</small>
-    <br><br>
+            <label>Weight:</label><br>
+            <input id="r_weight" type="number" min="1500" max="5500"><br><br>
 
-    <button onclick="predict()">Predict MPG</button>
+            <label>Acceleration:</label><br>
+            <input id="r_acc" type="number" step="0.1" min="8" max="26"><br><br>
 
-    <h3 id="result"></h3>
+            <label>Model Year:</label><br>
+            <input id="r_year" type="number" min="70" max="82"><br><br>
+
+            <label>Origin (1=USA, 2=EU, 3=Asia):</label><br>
+            <input id="r_origin" type="number" min="1" max="3"><br><br>
+
+            <button onclick="predictMPG()">Predict MPG</button>
+
+            <h3 id="mpg_result"></h3>
+        </div>
+
+
+
+        <!-- RIGHT: CYLINDER CLASSIFIER -->
+        <div class="box">
+            <h2>Cylinder Classifier</h2>
+
+            <label>MPG:</label><br>
+            <input id="c_mpg" type="number" step="0.1"><br><br>
+
+            <label>Displacement:</label><br>
+            <input id="c_disp" type="number" min="60" max="460"><br><br>
+
+            <label>Horsepower:</label><br>
+            <input id="c_hp" type="number" min="40" max="240"><br><br>
+
+            <label>Weight:</label><br>
+            <input id="c_weight" type="number" min="1500" max="5500"><br><br>
+
+            <label>Acceleration:</label><br>
+            <input id="c_acc" type="number" step="0.1" min="8" max="26"><br><br>
+
+            <label>Model Year:</label><br>
+            <input id="c_year" type="number" min="70" max="82"><br><br>
+
+            <label>Origin (1=USA, 2=EU, 3=Asia):</label><br>
+            <input id="c_origin" type="number" min="1" max="3"><br><br>
+
+            <button onclick="predictCylinders()">Predict Cylinder Count</button>
+
+            <h3 id="cyl_result"></h3>
+        </div>
+
+    </div>
+
 </body>
 </html>
