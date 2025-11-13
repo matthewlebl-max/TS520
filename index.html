@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>MPG Predictor</title>
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    <script src="script.js"></script>
 
+    <!-- Load ONNX Runtime Web -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
+    <!-- Load your script ONCE -->
+    <script src="script.js" defer></script>
 </head>
+
 <body>
     <h2>MPG Predictor</h2>
 
@@ -55,7 +59,5 @@
     <button onclick="predict()">Predict MPG</button>
 
     <h3 id="result"></h3>
-
-    <script src="script.js"></script>
 </body>
 </html>
