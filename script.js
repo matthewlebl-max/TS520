@@ -1,124 +1,64 @@
 let model = null;
 
-// Load JSON model once
+// Load model.json
 async function loadModel() {
-    if (model) return;
-
-    try {
+    if (!model) {
         const response = await fetch("model.json");
         model = await response.json();
-        console.log("Model loaded:", model);
-    } catch (err) {
-        console.error("Failed to load model.json", err);
     }
 }
 
-// Ensure the input is a valid number
-function readValue(id) {
-    const v = document.getElementById(id).value;
-    if (v === "" || isNaN(parseFloat(v))) {
-        throw new Error("Input " + id + " is empty or invalid");
+function normalizeInput(values, means, stds) {
+    const out = [];
+    for (let i = 0; i < values.length; i++) {
+        out.push((values[i] - means[i]) / stds[i]);
     }
-    return parseFloat(v);
+    return out;
 }
 
-// Matrix multiply
-function matmul(a, b) {
-    const rowsA = a.length;
-    const colsA = a[0].length;
-    const rowsB = b.length;
-    const colsB = b[0].length;
-
-    if (colsA !== rowsB) {
-        console.error("Shape mismatch:", rowsA, colsA, "x", rowsB, colsB);
-        throw new Error("Matrix shape mismatch");
-    }
-
-    const result = Array(rowsA)
-        .fill(0)
-        .map(() => Array(colsB).fill(0));
-
-    for (let i = 0; i < rowsA; i++) {
-        for (let j = 0; j < colsB; j++) {
-            for (let k = 0; k < colsA; k++) {
-                result[i][j] += a[i][k] * b[k][j];
-            }
+function denseLayer(input, weights, bias) {
+    const out = [];
+    for (let i = 0; i < bias.length; i++) {
+        let sum = 0;
+        for (let j = 0; j < input.length; j++) {
+            sum += input[j] * weights[i][j];
         }
+        out.push(sum + bias[i]);
     }
-    return result;
+    return out;
 }
 
-// Add bias vector
-function addBias(mat, bias) {
-    return mat.map(row => row.map((v, j) => v + bias[j]));
-}
-
-// ReLU
-function relu(mat) {
-    return mat.map(row => row.map(v => Math.max(0, v)));
+function relu(v) {
+    return v.map(x => Math.max(0, x));
 }
 
 async function predict() {
-    try {
-        await loadModel();
+    await loadModel();
 
-        if (!model) {
-            alert("Model not loaded. Check model.json path.");
-            return;
-        }
+    const cyl = parseFloat(document.getElementById("cyl").value);
+    const disp = parseFloat(document.getElementById("disp").value);
+    const hp = parseFloat(document.getElementById("hp").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const acc = parseFloat(document.getElementById("acc").value);
+    const year = parseFloat(document.getElementById("year").value);
+    const origin = parseFloat(document.getElementById("origin").value);
 
-        // Read inputs safely
-        const inputs = [
-            readValue("cyl"),
-            readValue("disp"),
-            readValue("hp"),
-            readValue("weight"),
-            readValue("acc"),
-            readValue("year"),
-            readValue("origin")
-        ];
+    let input = [cyl, disp, hp, weight, acc, year, origin];
 
-        // Normalize
-        const x = inputs.map((v, i) => {
-            const z = (v - model.means[i]) / model.stds[i];
-            if (isNaN(z)) console.error("Normalization NaN at index", i);
-            return z;
-        });
+    // Normalize input to match PyTorch model
+    input = normalizeInput(input, model.means, model.stds);
 
-        console.log("Normalized input:", x);
+    // Forward pass
+    let x = denseLayer(input, model.fc1_weight, model.fc1_bias);
+    x = relu(x);
 
-        let layer = [x]; // Shape [1,7]
+    x = denseLayer(x, model.fc2_weight, model.fc2_bias);
+    x = relu(x);
 
-        // fc1
-        layer = matmul(layer, model.fc1_weight);
-        layer = addBias(layer, model.fc1_bias);
-        layer = relu(layer);
+    x = denseLayer(x, model.fc3_weight, model.fc3_bias);
 
-        // fc2
-        layer = matmul(layer, model.fc2_weight);
-        layer = addBias(layer, model.fc2_bias);
-        layer = relu(layer);
+    const mpg = x[0];
 
-        // fc3
-        layer = matmul(layer, model.fc3_weight);
-        layer = addBias(layer, model.fc3_bias);
-
-        const mpg = layer[0][0];
-
-        if (isNaN(mpg)) {
-            console.error("Final MPG is NaN. Layer dump:", layer);
-            document.getElementById("result").innerHTML =
-                "Error: MPG computed as NaN. Check console.";
-            return;
-        }
-
-        // Success
-        document.getElementById("result").innerHTML =
-            "Predicted MPG: " + mpg.toFixed(2);
-
-    } catch (err) {
-        console.error(err);
-        document.getElementById("result").innerHTML =
-            "Error: " + err.message;
-    }
+    document.getElementById("result").innerHTML =
+        "Predicted MPG: <strong>" + mpg.toFixed(2) + "</strong>";
 }
