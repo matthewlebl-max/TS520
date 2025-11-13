@@ -6,10 +6,10 @@ async function predict() {
         parseFloat(document.getElementById("weight").value),
         parseFloat(document.getElementById("acc").value),
         parseFloat(document.getElementById("year").value),
-        parseFloat(document.getElementById("orig").value)
+        parseFloat(document.getElementById("origin").value)
     ];
 
-    const apiUrl = "http://localhost:5000/predict";  // adjust if you deploy elsewhere
+    const apiUrl = "http://localhost:5000/predict";
 
     try {
         const res = await fetch(apiUrl, {
@@ -20,8 +20,8 @@ async function predict() {
 
         const data = await res.json();
         document.getElementById("result").innerText = "Predicted MPG: " + data.mpg;
-    } catch (err) {
-        document.getElementById("result").innerText = "Error contacting API.";
-        console.error(err);
+    } catch (error) {
+        document.getElementById("result").innerText = "Error connecting to backend.";
+        console.error(error);
     }
 }
