@@ -1,86 +1,121 @@
-let model = null;
+// =====================================================
+// Shared functions
+// =====================================================
+function dot(a, b) {
+    let s = 0;
+    for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+    return s;
+}
 
-// Transpose helper because PyTorch stores weights differently
-function transpose(matrix) {
-    const rows = matrix.length;
-    const cols = matrix[0].length;
-    const out = [];
-    for (let c = 0; c < cols; c++) {
-        const row = [];
-        for (let r = 0; r < rows; r++) {
-            row.push(matrix[r][c]);
-        }
-        out.push(row);
+function matmul(input, weights) {
+    const out = new Array(weights.length).fill(0);
+    for (let r = 0; r < weights.length; r++) {
+        out[r] = dot(input, weights[r]);
     }
     return out;
 }
 
-// Load JSON model exported from Python
-async function loadModel() {
-    if (!model) {
-        const response = await fetch("model.json");
-        model = await response.json();
+function relu(arr) {
+    return arr.map(v => Math.max(0, v));
+}
 
-        // Fix weight orientation to match JS math
-        model.fc1_weight = transpose(model.fc1_weight);
-        model.fc2_weight = transpose(model.fc2_weight);
-        model.fc3_weight = transpose(model.fc3_weight);
+
+
+// =====================================================
+// MPG REGRESSION
+// =====================================================
+let mpgModel = null;
+
+async function loadMPG() {
+    if (!mpgModel) {
+        const res = await fetch("model.json");
+        mpgModel = await res.json();
     }
 }
 
-// Simple dense layer: y = ReLU(Wx + b)
-function denseLayer(inputVec, weights, biases, useRelu = true) {
-    const out = new Array(weights[0].length).fill(0);
+async function predictMPG() {
 
-    for (let j = 0; j < weights[0].length; j++) {
-        let sum = biases[j];
+    await loadMPG();
 
-        for (let i = 0; i < inputVec.length; i++) {
-            sum += inputVec[i] * weights[i][j];
-        }
+    const x = [
+        parseFloat(document.getElementById("r_cyl").value),
+        parseFloat(document.getElementById("r_disp").value),
+        parseFloat(document.getElementById("r_hp").value),
+        parseFloat(document.getElementById("r_weight").value),
+        parseFloat(document.getElementById("r_acc").value),
+        parseFloat(document.getElementById("r_year").value),
+        parseFloat(document.getElementById("r_origin").value)
+    ];
 
-        out[j] = useRelu ? Math.max(0, sum) : sum;
-    }
+    // normalize
+    const norm = x.map((v, i) => (v - mpgModel.means[i]) / mpgModel.stds[i]);
 
-    return out;
+    // forward pass
+    let h1 = matmul(norm, mpgModel.fc1_weight).map((v,i)=>v+mpgModel.fc1_bias[i]);
+    h1 = relu(h1);
+
+    let h2 = matmul(h1, mpgModel.fc2_weight).map((v,i)=>v+mpgModel.fc2_bias[i]);
+    h2 = relu(h2);
+
+    let out = matmul(h2, mpgModel.fc3_weight)[0] + mpgModel.fc3_bias[0];
+
+    document.getElementById("mpg_result").innerHTML =
+        "Predicted MPG: <strong>" + out.toFixed(2) + "</strong>";
 }
 
-// Normalize using saved means and stds
-function normalize(vec) {
-    let out = [];
-    for (let i = 0; i < vec.length; i++) {
-        out.push((vec[i] - model.means[i]) / model.stds[i]);
+
+
+// =====================================================
+// CYLINDER CLASSIFICATION
+// =====================================================
+let cylModel = null;
+
+async function loadCyl() {
+    if (!cylModel) {
+        const res = await fetch("cylinders.json");
+        cylModel = await res.json();
     }
-    return out;
 }
 
-async function predict() {
-    await loadModel();
+function softmax(arr) {
+    const e = arr.map(Math.exp);
+    const s = e.reduce((a,c)=>a+c,0);
+    return e.map(v => v / s);
+}
 
-    const cyl = parseFloat(document.getElementById("cyl").value);
-    const disp = parseFloat(document.getElementById("disp").value);
-    const hp = parseFloat(document.getElementById("hp").value);
-    const weight = parseFloat(document.getElementById("weight").value);
-    const acc = parseFloat(document.getElementById("acc").value);
-    const year = parseFloat(document.getElementById("year").value);
-    const origin = parseFloat(document.getElementById("origin").value);
+async function predictCylinders() {
 
-    const input = [cyl, disp, hp, weight, acc, year, origin];
+    await loadCyl();
 
-    // Normalize input
-    const x1 = normalize(input);
+    const x = [
+        parseFloat(document.getElementById("c_mpg").value),
+        parseFloat(document.getElementById("c_disp").value),
+        parseFloat(document.getElementById("c_hp").value),
+        parseFloat(document.getElementById("c_weight").value),
+        parseFloat(document.getElementById("c_acc").value),
+        parseFloat(document.getElementById("c_year").value),
+        parseFloat(document.getElementById("c_origin").value)
+    ];
 
-    // Layer 1
-    const h1 = denseLayer(x1, model.fc1_weight, model.fc1_bias, true);
+    // normalize
+    const norm = x.map((v,i)=>(v - cylModel.means[i]) / cylModel.stds[i]);
 
-    // Layer 2
-    const h2 = denseLayer(h1, model.fc2_weight, model.fc2_bias, true);
+    // fc1
+    let h1 = matmul(norm, cylModel.fc1_weight).map((v,i)=>v+cylModel.fc1_bias[i]);
+    h1 = relu(h1);
 
-    // Layer 3 (output)
-    const out = denseLayer(h2, model.fc3_weight, model.fc3_bias, false);
+    // fc2
+    let h2 = matmul(h1, cylModel.fc2_weight).map((v,i)=>v+cylModel.fc2_bias[i]);
+    h2 = relu(h2);
 
-    const mpg = out[0];
+    // fc3 logits
+    let h3 = matmul(h2, cylModel.fc3_weight).map((v,i)=>v+cylModel.fc3_bias[i]);
 
-    document.getElementById("result").textContent =
-        "Predicted MPG: " + mpg.toFixed(2);
+    const probs = softmax(h3);
+
+    const best = probs.indexOf(Math.max(...probs));
+    const predicted = cylModel.classes[best];
+
+    document.getElementById("cyl_result").innerHTML =
+        "Predicted Cylinders: <strong>" + predicted + "</strong>";
 }
