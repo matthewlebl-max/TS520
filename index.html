@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MPG Regression and Cylinder Classification</title>
+    <title>Vehicle Prediction Models</title>
     <script src="script.js" defer></script>
 
     <style>
@@ -21,6 +21,13 @@
         }
         label {
             font-weight: bold;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f3f3f3;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -59,6 +66,20 @@
             <button onclick="predictMPG()">Predict MPG</button>
 
             <h3 id="mpg_result"></h3>
+
+            <!-- INFO TEXT BELOW REGRESSION BOX -->
+            <div class="info">
+                <strong>Typical Value Ranges:</strong><br>
+                Cylinders: 3 to 8<br>
+                Displacement: 60 to 460 cubic inches<br>
+                Horsepower: 40 to 240<br>
+                Weight: 1500 to 5500 pounds<br>
+                Acceleration: 8 to 26 seconds<br>
+                Model Year: 70 to 82<br>
+                Origin: 1=USA, 2=Europe, 3=Asia<br><br>
+
+                These ranges roughly match the distribution of the Auto MPG dataset the model was trained on.
+            </div>
         </div>
 
 
@@ -91,6 +112,16 @@
             <button onclick="predictCylinders()">Predict Cylinder Count</button>
 
             <h3 id="cyl_result"></h3>
+
+            <!-- INFO TEXT BELOW CLASSIFIER BOX -->
+            <div class="info">
+                <strong>Common Cylinder Categories:</strong><br>
+                4 cylinders: Smaller, more efficient cars<br>
+                6 cylinders: Mid-size vehicles and light trucks<br>
+                8 cylinders: Larger trucks and muscle cars<br><br>
+
+                This model assigns a probability to each cylinder class and returns the most likely one.
+            </div>
         </div>
 
     </div>
