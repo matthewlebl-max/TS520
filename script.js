@@ -1,27 +1,44 @@
-async function predict() {
-    const inputs = [
-        parseFloat(document.getElementById("cyl").value),
-        parseFloat(document.getElementById("disp").value),
-        parseFloat(document.getElementById("hp").value),
-        parseFloat(document.getElementById("weight").value),
-        parseFloat(document.getElementById("acc").value),
-        parseFloat(document.getElementById("year").value),
-        parseFloat(document.getElementById("origin").value)
-    ];
+// Load ONNX Runtime Web
+const ort = window.ort;
 
-    const apiUrl = "http://localhost:5000/predict";
+let session = null;
 
-    try {
-        const res = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ inputs: inputs })
-        });
-
-        const data = await res.json();
-        document.getElementById("result").innerText = "Predicted MPG: " + data.mpg;
-    } catch (error) {
-        document.getElementById("result").innerText = "Error connecting to backend.";
-        console.error(error);
+// Load the ONNX model once
+async function initModel() {
+    if (!session) {
+        session = await ort.InferenceSession.create("mpg_pytorch.onnx");
     }
+}
+
+async function predict() {
+
+    await initModel();
+
+    // Read your existing inputs exactly as you already have them
+    const cyl = parseFloat(document.getElementById("cyl").value);
+    const disp = parseFloat(document.getElementById("disp").value);
+    const hp = parseFloat(document.getElementById("hp").value);
+    const w = parseFloat(document.getElementById("weight").value);
+    const acc = parseFloat(document.getElementById("acc").value);
+    const year = parseFloat(document.getElementById("year").value);
+    const origin = parseFloat(document.getElementById("origin").value);
+
+    // Create a Float32Array with your seven inputs
+    const inputData = Float32Array.from([cyl, disp, hp, w, acc, year, origin]);
+
+    // Build a tensor shaped like [1,7]
+    const tensor = new ort.Tensor("float32", inputData, [1, 7]);
+
+    // Prepare feeds
+    const feeds = {};
+    feeds[session.inputNames[0]] = tensor;
+
+    // Run inference
+    const results = await session.run(feeds);
+
+    const mpgValue = results[session.outputNames[0]].data[0];
+
+    // Update your existing result box
+    document.getElementById("result").innerHTML = 
+        "Predicted MPG: <strong>" + mpgValue.toFixed(2) + "</strong>";
 }
