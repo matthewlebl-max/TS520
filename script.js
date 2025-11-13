@@ -1,15 +1,18 @@
-// Load ORT single global instance
 let session = null;
 
-// Load the ONNX model once
 async function initModel() {
     if (!session) {
-        session = await ort.InferenceSession.create("mpg_pytorch.onnx");
+        session = await ort.InferenceSession.create(
+            "mpg_pytorch.onnx",
+            {
+                executionProviders: ["wasm"],
+                graphOptimizationLevel: "disabled"
+            }
+        );
     }
 }
 
 async function predict() {
-
     await initModel();
 
     const cyl = parseFloat(document.getElementById("cyl").value);
